@@ -1,0 +1,15 @@
+
+HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings
+    ProxyEnable    REG_DWORD    0x1
+
+
+HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings
+    ProxyServer    REG_SZ    127.0.0.1:7897
+
+---ALLPROXY---  
+---GETPROXIES---  
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+Traceback (most recent call last):
+  File "D:\swb\shell\lib\Python3.13\Lib\io.py", line 55, in <module>
+ImportError: cannot import name 'text_encoding' from 'io' (unknown location)

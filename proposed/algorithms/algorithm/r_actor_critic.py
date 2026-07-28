@@ -130,10 +130,16 @@ class R_Critic(nn.Module):
         self.tpdv = dict(dtype=torch.float32, device=device)
         init_method = [nn.init.xavier_uniform_, nn.init.orthogonal_][self._use_orthogonal]
 
-        n_agents = getattr(args, 'n_agents', 6)
+        cent_obs_shape = get_shape_from_obs_space(cent_obs_space)
         obs_per_agent = getattr(args, 'obs_per_agent', 4)
         attn_radius = getattr(args, 'attn_radius', 200.0)
         attn_heads = getattr(args, 'attn_heads', 1)
+
+        # infer agent count from the centralized obs so that runs with a
+        # different number of UAVs work without touching the config
+        assert cent_obs_shape[0] % obs_per_agent == 0, \
+            f"cent_obs dim {cent_obs_shape[0]} not divisible by obs_per_agent {obs_per_agent}"
+        n_agents = cent_obs_shape[0] // obs_per_agent
 
         self.attention = LocalSpatialSelfAttention(
             n_agents=n_agents,

@@ -40,6 +40,10 @@ class LocalSpatialSelfAttention(nn.Module):
             nn.init.constant_(m.bias, 0)
             return m
 
+        # normalize per-agent features before projection: raw coords are O(500)
+        # while throughput is O(1), which would otherwise dominate attention logits
+        self.feature_norm = nn.LayerNorm(obs_per_agent)
+
         self.q = init_(nn.Linear(obs_per_agent, hidden_size))
         self.k = init_(nn.Linear(obs_per_agent, hidden_size))
         self.v = init_(nn.Linear(obs_per_agent, hidden_size))
@@ -52,15 +56,19 @@ class LocalSpatialSelfAttention(nn.Module):
         N = self.n_agents
         x = cent_obs.view(B, N, self.obs_per_agent)  # [B, N, D]
 
-        # --- spatial mask: attend only within radius ---
+        # --- spatial mask built from RAW coordinates (before normalization) ---
         pos = x[:, :, :2]                              # [B, N, 2]  (x, y)
         dist = (pos.unsqueeze(2) - pos.unsqueeze(1)).norm(dim=-1)  # [B, N, N]
         local_mask = dist <= self.radius               # [B, N, N]
+        # self-attention is always allowed, so no row can be fully masked
+        eye = torch.eye(N, dtype=torch.bool, device=x.device).unsqueeze(0)
+        local_mask = local_mask | eye
 
-        # --- multi-head attention ---
-        Q = self.q(x).view(B, N, self.n_heads, self.head_dim).transpose(1, 2)
-        K = self.k(x).view(B, N, self.n_heads, self.head_dim).transpose(1, 2)
-        V = self.v(x).view(B, N, self.n_heads, self.head_dim).transpose(1, 2)
+        # --- normalize features, then multi-head attention ---
+        h = self.feature_norm(x)                       # [B, N, D]
+        Q = self.q(h).view(B, N, self.n_heads, self.head_dim).transpose(1, 2)
+        K = self.k(h).view(B, N, self.n_heads, self.head_dim).transpose(1, 2)
+        V = self.v(h).view(B, N, self.n_heads, self.head_dim).transpose(1, 2)
 
         scale = math.sqrt(self.head_dim)
         attn = torch.matmul(Q, K.transpose(-2, -1)) / scale  # [B, heads, N, N]

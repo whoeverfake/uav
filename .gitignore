@@ -1,0 +1,12 @@
+.venv/  
+wheels/  
+__pycache__/  
+*.pyc  
+*.log  
+probe*.txt  
+cap*.txt  
+piplog*.txt  
+venvlog.txt  
+netlog.txt  
+dl.txt  
+instlog*.txt  

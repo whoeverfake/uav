@@ -1,0 +1,9 @@
+Looking in indexes: https://pypi.tuna.tsinghua.edu.cn/simple
+Collecting numpy
+  Downloading https://pypi.tuna.tsinghua.edu.cn/packages/69/65/0d47953afa0ad569d12de5f65d964321c208492064c38fe3b0b9744f8d44/numpy-1.24.4-cp38-cp38-win_amd64.whl (14.9 MB)
+     -------------------------------------- 14.9/14.9 MB 362.2 kB/s eta 0:00:00
+Installing collected packages: numpy
+Successfully installed numpy-1.24.4
+---NOPROXYSTAR---  
+Looking in indexes: https://pypi.tuna.tsinghua.edu.cn/simple
+Requirement already satisfied: numpy in c:\users\whoever\desktop\hust\sci\uav\.venv\lib\site-packages (1.24.4)

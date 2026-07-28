@@ -1,0 +1,18 @@
+env_var:
+env:
+global:
+  C:\ProgramData\pip\pip.ini, exists: False
+site:
+  c:\Users\whoever\Desktop\hust\sci\uav\.venv\pip.ini, exists: False
+user:
+  C:\Users\whoever\pip\pip.ini, exists: False
+  C:\Users\whoever\AppData\Roaming\pip\pip.ini, exists: False
+---TRY-NOPROXY---  
+Looking in indexes: https://pypi.tuna.tsinghua.edu.cn/simple
+WARNING: Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ProxyError('Cannot connect to proxy.', FileNotFoundError(2, 'No such file or directory'))': /simple/numpy/
+WARNING: Retrying (Retry(total=3, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ProxyError('Cannot connect to proxy.', FileNotFoundError(2, 'No such file or directory'))': /simple/numpy/
+WARNING: Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ProxyError('Cannot connect to proxy.', FileNotFoundError(2, 'No such file or directory'))': /simple/numpy/
+WARNING: Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ProxyError('Cannot connect to proxy.', FileNotFoundError(2, 'No such file or directory'))': /simple/numpy/
+WARNING: Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ProxyError('Cannot connect to proxy.', FileNotFoundError(2, 'No such file or directory'))': /simple/numpy/
+ERROR: Could not find a version that satisfies the requirement numpy (from versions: none)
+ERROR: No matching distribution found for numpy

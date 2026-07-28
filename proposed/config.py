@@ -301,8 +301,7 @@ def get_config():
                         help="by default None. set the path to pretrained model.")  # 要检测/继续训练的模型的路径
 
     # local spatial self-attention parameters
-    parser.add_argument("--n_agents", type=int, default=6,
-                        help="Number of UAV agents (must match num_uav in env).")
+    # note: agent count is inferred from the centralized obs dim, no flag needed
     parser.add_argument("--obs_per_agent", type=int, default=4,
                         help="Observation dims per agent fed into critic attention (x, y, n_users, throughput).")
     parser.add_argument("--attn_radius", type=float, default=200.0,
