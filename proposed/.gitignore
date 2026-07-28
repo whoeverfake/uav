@@ -3,3 +3,8 @@
 *.iml
 out
 gen
+train_full.log
+train_run.log
+imageio.log
+gitlog.txt
+*.log
