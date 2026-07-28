@@ -76,10 +76,15 @@ def main(args):
         device = torch.device("cpu")
         torch.set_num_threads(all_args.n_training_threads)
 
-    # 定义数据存放路径
-    run_dir = Path(os.path.split(os.path.dirname(os.path.abspath(__file__)))[0] + "/results")
+    # 定义数据存放路径：按 experiment_name 分目录，避免不同实验(如 local vs bahdanau)互相覆盖
+    results_root = Path(os.path.split(os.path.dirname(os.path.abspath(__file__)))[0] + "/results")
+    if all_args.experiment_name and all_args.experiment_name != "check":
+        run_dir = results_root / all_args.experiment_name
+    else:
+        run_dir = results_root
     if not run_dir.exists():
         os.makedirs(str(run_dir))
+
 
     # 设置进程名
     setproctitle.setproctitle(str(all_args.algorithm_name) + "-" + str(all_args.experiment_name) + "@" + str(

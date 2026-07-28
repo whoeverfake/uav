@@ -9,4 +9,11 @@ piplog*.txt
 venvlog.txt  
 netlog.txt  
 dl.txt  
-instlog*.txt  
+instlog*.txt
+gitlog.txt
+
+# training artifacts (tensorboard event files)
+events.out.tfevents.*
+**/logs/**/events.out.tfevents.*
+
+

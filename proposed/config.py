@@ -308,5 +308,11 @@ def get_config():
                         help="Spatial radius for local attention mask (same unit as UAV coordinates).")
     parser.add_argument("--attn_heads", type=int, default=1,
                         help="Number of attention heads in LocalSpatialSelfAttention.")
+    parser.add_argument("--critic_attn", type=str, default="local",
+                        choices=["local", "bahdanau"],
+                        help="Critic attention type: 'local' (proposed Local Spatial "
+                             "Self-Attention) or 'bahdanau' (global additive baseline). "
+                             "Only this differs between proposed and baseline runs.")
 
     return parser
+

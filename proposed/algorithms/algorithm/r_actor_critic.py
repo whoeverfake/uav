@@ -13,7 +13,8 @@ from algorithms.utils.mlp import MLPBase
 from algorithms.utils.rnn import RNNLayer
 from algorithms.utils.act import ACTLayer
 from algorithms.utils.popart import PopArt
-from algorithms.utils.attention import LocalSpatialSelfAttention
+from algorithms.utils.attention import LocalSpatialSelfAttention, BahdanauCriticAttention
+
 from utils.util import get_shape_from_obs_space
 
 
@@ -141,14 +142,27 @@ class R_Critic(nn.Module):
             f"cent_obs dim {cent_obs_shape[0]} not divisible by obs_per_agent {obs_per_agent}"
         n_agents = cent_obs_shape[0] // obs_per_agent
 
-        self.attention = LocalSpatialSelfAttention(
-            n_agents=n_agents,
-            obs_per_agent=obs_per_agent,
-            hidden_size=self.hidden_size,
-            n_heads=attn_heads,
-            radius=attn_radius,
-            use_orthogonal=self._use_orthogonal,
-        )
+        # select critic attention: 'local' = proposed Local Spatial Self-Attention,
+        # 'bahdanau' = global additive attention baseline. Only this differs
+        # between the proposed and baseline runs.
+        critic_attn = getattr(args, 'critic_attn', 'local')
+        if critic_attn == 'bahdanau':
+            self.attention = BahdanauCriticAttention(
+                n_agents=n_agents,
+                obs_per_agent=obs_per_agent,
+                hidden_size=self.hidden_size,
+                use_orthogonal=self._use_orthogonal,
+            )
+        else:
+            self.attention = LocalSpatialSelfAttention(
+                n_agents=n_agents,
+                obs_per_agent=obs_per_agent,
+                hidden_size=self.hidden_size,
+                n_heads=attn_heads,
+                radius=attn_radius,
+                use_orthogonal=self._use_orthogonal,
+            )
+
 
         def init_(m):
             return init(m, init_method, lambda x: nn.init.constant_(x, 0))
