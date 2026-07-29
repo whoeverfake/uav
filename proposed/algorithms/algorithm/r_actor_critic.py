@@ -15,6 +15,7 @@ from algorithms.utils.act import ACTLayer
 from algorithms.utils.popart import PopArt
 from algorithms.utils.attention import LocalSpatialSelfAttention, BahdanauCriticAttention
 from algorithms.utils.attention_rnn import AttentionRNNCritic
+from algorithms.utils.attention_local_rnn import LocalAttentionRNNCritic
 
 from utils.util import get_shape_from_obs_space
 
@@ -146,9 +147,10 @@ class R_Critic(nn.Module):
         # select critic attention mechanism:
         # 'local' = Local Spatial Self-Attention
         # 'bahdanau' = global additive attention
-        # 'attention_rnn' = Bahdanau + GRU (spatial + temporal)
+        # 'attention_rnn' = Bahdanau + GRU
+        # 'local_rnn' = Local + GRU (original intended innovation)
         critic_attn = getattr(args, 'critic_attn', 'local')
-        self.use_rnn = (critic_attn == 'attention_rnn')
+        self.use_rnn = (critic_attn in ['attention_rnn', 'local_rnn'])
         
         if critic_attn == 'bahdanau':
             self.attention = BahdanauCriticAttention(
@@ -162,6 +164,16 @@ class R_Critic(nn.Module):
                 n_agents=n_agents,
                 obs_per_agent=obs_per_agent,
                 hidden_size=self.hidden_size,
+                num_layers=1,
+                use_orthogonal=self._use_orthogonal,
+            )
+        elif critic_attn == 'local_rnn':
+            self.attention = LocalAttentionRNNCritic(
+                n_agents=n_agents,
+                obs_per_agent=obs_per_agent,
+                hidden_size=self.hidden_size,
+                n_heads=attn_heads,
+                radius=attn_radius,
                 num_layers=1,
                 use_orthogonal=self._use_orthogonal,
             )

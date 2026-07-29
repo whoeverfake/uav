@@ -309,7 +309,7 @@ def get_config():
     parser.add_argument("--attn_heads", type=int, default=1,
                         help="Number of attention heads in LocalSpatialSelfAttention.")
     parser.add_argument("--critic_attn", type=str, default="local",
-                        choices=["local", "bahdanau", "attention_rnn"],
+                        choices=["local", "bahdanau", "attention_rnn", "local_rnn"],
                         help="Critic attention type: 'local' (proposed Local Spatial "
                              "Self-Attention) or 'bahdanau' (global additive baseline). "
                              "Only this differs between proposed and baseline runs.")
