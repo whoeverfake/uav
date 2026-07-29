@@ -14,6 +14,7 @@ from algorithms.utils.rnn import RNNLayer
 from algorithms.utils.act import ACTLayer
 from algorithms.utils.popart import PopArt
 from algorithms.utils.attention import LocalSpatialSelfAttention, BahdanauCriticAttention
+from algorithms.utils.attention_rnn import AttentionRNNCritic
 
 from utils.util import get_shape_from_obs_space
 
@@ -142,15 +143,26 @@ class R_Critic(nn.Module):
             f"cent_obs dim {cent_obs_shape[0]} not divisible by obs_per_agent {obs_per_agent}"
         n_agents = cent_obs_shape[0] // obs_per_agent
 
-        # select critic attention: 'local' = proposed Local Spatial Self-Attention,
-        # 'bahdanau' = global additive attention baseline. Only this differs
-        # between the proposed and baseline runs.
+        # select critic attention mechanism:
+        # 'local' = Local Spatial Self-Attention
+        # 'bahdanau' = global additive attention
+        # 'attention_rnn' = Bahdanau + GRU (spatial + temporal)
         critic_attn = getattr(args, 'critic_attn', 'local')
+        self.use_rnn = (critic_attn == 'attention_rnn')
+        
         if critic_attn == 'bahdanau':
             self.attention = BahdanauCriticAttention(
                 n_agents=n_agents,
                 obs_per_agent=obs_per_agent,
                 hidden_size=self.hidden_size,
+                use_orthogonal=self._use_orthogonal,
+            )
+        elif critic_attn == 'attention_rnn':
+            self.attention = AttentionRNNCritic(
+                n_agents=n_agents,
+                obs_per_agent=obs_per_agent,
+                hidden_size=self.hidden_size,
+                num_layers=1,
                 use_orthogonal=self._use_orthogonal,
             )
         else:
@@ -177,16 +189,22 @@ class R_Critic(nn.Module):
     def forward(self, cent_obs, rnn_states, masks):
         """
         :param cent_obs:   [B, n_agents * obs_per_agent]
-        :param rnn_states: unused (kept for API compatibility)
+        :param rnn_states: [num_layers, B, hidden] for attention_rnn, else unused
         :param masks:      unused (kept for API compatibility)
         :return values:    [B, 1]
-        :return rnn_states: unchanged
+        :return rnn_states: updated if attention_rnn, else unchanged
         """
         cent_obs = check(cent_obs).to(**self.tpdv)
         rnn_states = check(rnn_states).to(**self.tpdv)
         masks = check(masks).to(**self.tpdv)
 
-        critic_features = self.attention(cent_obs)   # [B, hidden_size]
+        if self.use_rnn:
+            # AttentionRNNCritic returns (features, new_rnn_states)
+            critic_features, rnn_states = self.attention(cent_obs, rnn_states)
+        else:
+            # Other attention modules only return features
+            critic_features = self.attention(cent_obs)
+        
         values = self.v_out(critic_features)
 
         return values, rnn_states
