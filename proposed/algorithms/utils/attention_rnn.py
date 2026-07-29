@@ -57,10 +57,10 @@ class AttentionRNNCritic(nn.Module):
         """
         Args:
             cent_obs: [B, n_agents * obs_per_agent]
-            rnn_states: [num_layers, B, hidden_size] or None
+            rnn_states: [B, num_layers, hidden_size] (MAPPO format) or None
         Returns:
             output: [B, hidden_size]
-            new_rnn_states: [num_layers, B, hidden_size]
+            new_rnn_states: [B, num_layers, hidden_size]
         """
         B = cent_obs.size(0)
 
@@ -70,13 +70,20 @@ class AttentionRNNCritic(nn.Module):
         # [2] Temporal: RNN models dynamics across timesteps
         attn_out = attn_out.unsqueeze(1)  # [B, 1, hidden_size] for RNN input
         
-        if rnn_states is None:
-            rnn_states = torch.zeros(
+        if rnn_states is None or rnn_states.shape[0] != B:
+            # Initialize or reinitialize if batch size changed
+            rnn_states_gru = torch.zeros(
                 self.num_layers, B, self.hidden_size,
                 device=cent_obs.device, dtype=cent_obs.dtype
             )
+        else:
+            # Convert from [B, num_layers, H] to [num_layers, B, H] for GRU
+            rnn_states_gru = rnn_states.transpose(0, 1).contiguous()
         
-        rnn_out, new_rnn_states = self.rnn(attn_out, rnn_states)
+        rnn_out, new_rnn_states_gru = self.rnn(attn_out, rnn_states_gru)
         rnn_out = rnn_out.squeeze(1)  # [B, hidden_size]
+        
+        # Convert back to [B, num_layers, H] for MAPPO compatibility
+        new_rnn_states = new_rnn_states_gru.transpose(0, 1).contiguous()
 
         return rnn_out, new_rnn_states
